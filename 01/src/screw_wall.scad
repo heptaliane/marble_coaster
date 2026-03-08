@@ -47,3 +47,7 @@ union() {
     translate([inner_diameter / 2, 0, 0])
     square([wall_thickness / 2, joint_height]);
 }
+
+// Ball guide
+translate([0, inner_diameter / 2, 0])
+    cube([inner_diameter / 2, wall_thickness, wall_height]);
