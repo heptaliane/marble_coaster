@@ -1,7 +1,7 @@
-bottle_outer_diameter = 94;
+bottle_outer_diameter = 96;
 stage_outer_diameter = 89;
 joint_diameter = 3;
-joint_height = 2;
+joint_height = 1;
 joint_count = 6;
 wall_height = 20;
 wall_thickness = 2;
