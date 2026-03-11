@@ -1,93 +1,104 @@
-bottle_inner_diameter = 90;
-bottle_outer_diameter = 93;
-shaft_diameter = 4.2;
-screw_diameter = 27;
-bottle_clearance = 1;
-shaft_clearance = 0.2;
-screw_clearance = 0.5;
+bottle_inner_diameter = 89;
 screw_position = 30;
-screw_wall_diameter = 23;
-container_height = 20;
+screw_clearance = 1;
+screw_diameter = 27;
+shaft_diameter = 4.2;
+shaft_clearance = 0.2;
+shaft_count = 4;
 stage_height = 10;
+stage_clearance = 2;
+joint_clearance = 0.4;
+joint_diameter = 3;
+joint_height = 1;
+joint_count = 6;
 wall_thickness = 2;
+slope_1_height = 3;
+slope_2_height = 1;
+slope_3_height = 11;
 wall_joint_angle = 80;
-shaft_offset = bottle_inner_diameter / sqrt(8) * 0.8;
+wall_joint_thickness = 1;
+wall_inner_diameter = 23;
 
-$fn = $preview ? 20 : 60;
-sphere_fn = $preview ? 60 : 600;
-
-cutoff_position = screw_position - screw_diameter / 2;
-x_dist = bottle_inner_diameter / 2 + cutoff_position;
-y_dist = stage_height - wall_thickness;
-cutoff_z = (x_dist ^ 2 + y_dist ^ 2) / 2 / (stage_height - wall_thickness);
-screw_radius = screw_diameter / 2;
-cutoff_dist = screw_position + bottle_inner_diameter / 4;
-cutoff_radius = sqrt(cutoff_dist ^ 2 - sqrt(2) * screw_radius * cutoff_dist + screw_radius ^ 2);
+$fn = $preview ? 20 : 100;
+joint_position = (bottle_inner_diameter - joint_diameter - stage_clearance) / 2;
+shaft_position = bottle_inner_diameter / 2 - stage_clearance - shaft_diameter / 2;
+slope_1_position_x = - screw_diameter / 2;
+slope_1_position_y = screw_position - screw_diameter / 2;
+slope_1_radius = sqrt(slope_1_position_x ^ 2 + slope_1_position_y ^ 2) + bottle_inner_diameter / 2;
+slope_2_position_x = -screw_diameter * sqrt(2) * 3 / 8;
+slope_2_position_y = screw_position - screw_diameter / 4 / sqrt(2);
+slope_2_radius = sqrt((bottle_inner_diameter / 2) ^ 2 - slope_2_position_y ^ 2);
 
 difference() {
-    union() {
-        difference() {
+    cylinder(d = bottle_inner_diameter, h = stage_height + wall_thickness);
+
+    translate([0, screw_position, wall_thickness])
+    cylinder(d = screw_diameter, h = stage_height + 1);
+
+    // Screw position
+    translate([0, screw_position, -1])
+    cylinder(d = shaft_diameter + shaft_clearance, h = stage_height + wall_thickness + 2);
+    translate([
+        -screw_diameter / sqrt(8),
+        screw_position - screw_diameter / sqrt(8),
+        wall_thickness
+    ])
+    rotate([0, 0, 45])
+    cube([screw_diameter / 2, screw_diameter / 2, stage_height + 1]);
+
+    // Slope
+    difference() {
+        union() {
+            translate([slope_1_position_x, slope_1_position_y, wall_thickness + slope_1_height])
             cylinder(
-                d = bottle_outer_diameter + bottle_clearance + wall_thickness,
-                h = container_height
+                r1 = 0,
+                r2 = slope_1_radius + 1,
+                h = stage_height - slope_1_height + 0.1
             );
-
-            translate([0, 0, wall_thickness])
-            cylinder(d = bottle_outer_diameter + bottle_clearance, h = container_height);
+            translate([slope_2_position_x, slope_2_position_y, wall_thickness + slope_2_height])
+            cylinder(
+                r1 = 0,
+                r2 = slope_2_radius + 1,
+                h = stage_height - slope_2_height + 0.1
+            );
         }
+        translate([-bottle_inner_diameter / 2, screw_position, -1])
+        cube([bottle_inner_diameter, bottle_inner_diameter / 2, stage_height + wall_thickness]);
+    }
+    translate([-bottle_inner_diameter / 2, screw_position - 0.1, wall_thickness + stage_height - 0.9])
+    rotate([0, 90, 0])
+    linear_extrude(height = bottle_inner_diameter, convexity = 10)
+        polygon([
+            [0, 0],
+            [0, bottle_inner_diameter / 2 - screw_position],
+            [wall_thickness + stage_height - slope_3_height, 0]
+        ]);
 
-        difference() {
-            cylinder(d = bottle_inner_diameter, h = stage_height);
-
-            translate([screw_position, 0, wall_thickness])
-                cylinder(d = screw_diameter, h = stage_height);
-
-            intersection() {
-                translate([-bottle_inner_diameter / 4, 0, 0])
-                cylinder(r = cutoff_radius, h = stage_height + 1);
-
-                translate([cutoff_position, 0, cutoff_z + wall_thickness])
-                    sphere(cutoff_z, $fn = sphere_fn);
-            }
-
-            translate([
-                -bottle_inner_diameter / 2,
-                bottle_inner_diameter / 2,
-                stage_height / 2 + 0.1
-            ])
-            rotate([90, 0, 0])
-            linear_extrude(height = bottle_inner_diameter + 2, convexity = 10)
-            polygon(points = [
-                [0, stage_height / 2],
-                [0, 0],
-                [bottle_inner_diameter, stage_height / 2]
-            ]);
-        }
+    // Shaft holes
+    for (i = [0 : shaft_count - 1]) {
+        rotate([0, 0, i * (360 / shaft_count) + (360 / shaft_count) / 2])
+        translate([shaft_position, 0, wall_thickness])
+            cylinder(d = shaft_diameter, h = stage_height + 1);
     }
 
-    // For shaft joint
-    translate([screw_position, 0, -1])
-        cylinder(d = shaft_diameter + shaft_clearance, h = stage_height + 2);
-    translate([shaft_offset, shaft_offset, -1])
-        cylinder(d = shaft_diameter, h = stage_height + 2);
-    translate([-shaft_offset, shaft_offset, -1])
-        cylinder(d = shaft_diameter, h = stage_height + 2);
-    translate([shaft_offset, -shaft_offset, -1])
-        cylinder(d = shaft_diameter, h = stage_height + 2);
-    translate([-shaft_offset, -shaft_offset, -1])
-        cylinder(d = shaft_diameter, h = stage_height + 2);
+    // Joint hole
+    for (i = [0 : joint_count - 1]) {
+        rotate([0, 0, i * (360 / joint_count)])
+        translate([joint_position, 0, -1])
+            cylinder(d = joint_diameter, h = joint_height + 1);
+    }
 
-    // Screw wall joint
-    translate([screw_position, 0, -1])
-    rotate([0, 0, 90 - wall_joint_angle / 2])
-    rotate_extrude(angle = wall_joint_angle, convexity = 10)
-    translate([screw_wall_diameter / 2 - 1, 0, 0])
-    square([wall_thickness / 2 + 0.3, stage_height + 2]);
-    //square([wall_thickness / 2, stage_height + 2]);
+    // Wall joint hole
+    translate([0, screw_position, -1])
+    union() {
+        rotate([0, 0, 90 - wall_joint_angle / 2])
+        rotate_extrude(angle = wall_joint_angle, convexity = 10)
+        translate([wall_inner_diameter / 2 - 1, 0, 0])
+        square([wall_joint_thickness + 0.5, wall_thickness + 2]);
 
-    translate([screw_position, 0, -1])
-    rotate([0, 0, 270 - wall_joint_angle / 2])
-    rotate_extrude(angle = wall_joint_angle, convexity = 10)
-    translate([screw_wall_diameter / 2 - 1, 0, 0])
-    square([wall_thickness / 2 + 0.3, stage_height + 2]);
+        rotate([0, 0, 270 - wall_joint_angle / 2])
+        rotate_extrude(angle = wall_joint_angle, convexity = 10)
+        translate([wall_inner_diameter / 2 - 1, 0, 0])
+        square([wall_joint_thickness + 0.5, wall_thickness + 2]);
+    }
 }
