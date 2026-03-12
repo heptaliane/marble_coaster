@@ -85,7 +85,7 @@ difference() {
     for (i = [0 : joint_count - 1]) {
         rotate([0, 0, i * (360 / joint_count)])
         translate([joint_position, 0, -1])
-            cylinder(d = joint_diameter, h = joint_height + 1);
+            cylinder(d = joint_diameter, h = wall_thickness + 1);
     }
 
     // Wall joint hole
@@ -93,12 +93,12 @@ difference() {
     union() {
         rotate([0, 0, 90 - wall_joint_angle / 2])
         rotate_extrude(angle = wall_joint_angle, convexity = 10)
-        translate([wall_inner_diameter / 2 - 1, 0, 0])
+        translate([wall_inner_diameter / 2 + 0.5, 0, 0])
         square([wall_joint_thickness + 0.5, wall_thickness + 2]);
 
         rotate([0, 0, 270 - wall_joint_angle / 2])
         rotate_extrude(angle = wall_joint_angle, convexity = 10)
-        translate([wall_inner_diameter / 2 - 1, 0, 0])
+        translate([wall_inner_diameter / 2 + 0.5, 0, 0])
         square([wall_joint_thickness + 0.5, wall_thickness + 2]);
     }
 }
