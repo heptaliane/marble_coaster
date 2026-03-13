@@ -93,12 +93,12 @@ difference() {
     union() {
         rotate([0, 0, 90 - wall_joint_angle / 2])
         rotate_extrude(angle = wall_joint_angle, convexity = 10)
-        translate([wall_inner_diameter / 2 + 0.5, 0, 0])
-        square([wall_joint_thickness + 0.5, wall_thickness + 2]);
+        translate([wall_inner_diameter / 2 - 1, 0, 0])
+        square([wall_joint_thickness + 1, wall_thickness + 2]);
 
         rotate([0, 0, 270 - wall_joint_angle / 2])
         rotate_extrude(angle = wall_joint_angle, convexity = 10)
-        translate([wall_inner_diameter / 2 + 0.5, 0, 0])
-        square([wall_joint_thickness + 0.5, wall_thickness + 2]);
+        translate([wall_inner_diameter / 2 - 1, 0, 0])
+        square([wall_joint_thickness + 1, wall_thickness + 2]);
     }
 }
